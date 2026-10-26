@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل حضور السيلز</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #0b1329;
+            color: #fff;
+        }
+        .card {
+            background: #111c3a;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid #1e293b;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        h2 {
+            color: #38bdf8;
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+        }
+        .form-group {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            color: #fff;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+        .btn-submit {
+            width: 100%;
+            background: #16a34a;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-submit:hover {
+            background: #15803d;
+        }
+        #successMsg {
+            margin-top: 20px;
+            color: #4ade80;
+            font-weight: bold;
+            display: none;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2><i class="fas fa-qrcode"></i> تسجيل حضور السيلز</h2>
+        <form id="scanForm">
+            <div class="form-group">
+                <label>اختر اسمك:</label>
+                <select id="scanSalesSelect" required>
+                    <option value="">جاري تحميل الأسماء...</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-submit">تمت (تسجيل الوقت)</button>
+        </form>
+        <div id="successMsg">
+            <i class="fas fa-check-circle"></i> تم تسجيل حضورك بنجاح!
+        </div>
+    </div>
+
+    <script>
+        // سحب أسماء الموظفين من السيستم عندك (LocalStorage) تلقائياً
+        document.addEventListener("DOMContentLoaded", () => {
+            const select = document.getElementById('scanSalesSelect');
+            let employees = JSON.parse(localStorage.getItem('office_employees')) || [];
+            
+            if (employees.length === 0) {
+                select.innerHTML = `<option value="">لا يوجد موظفين مسجلين في السيستم</option>`;
+            } else {
+                select.innerHTML = `<option value="">اختر اسم السيلز...</option>` + 
+                    employees.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+            }
+        });
+
+        // عند الضغط على تمت
+        document.getElementById('scanForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const salesName = document.getElementById('scanSalesSelect').value;
+            
+            if (!salesName) {
+                alert("الرجاء اختيار اسم السيلز");
+                return;
+            }
+
+            const now = new Date();
+
+            // حفظ التوقيت في السجل ليظهر معك فوراً
+            let scanRecords = JSON.parse(localStorage.getItem('office_scans')) || [];
+            scanRecords.unshift({
+                salesName,
+                dateFormatted: `${now.toLocaleDateString('ar-EG')} - ${now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})}`
+            });
+            localStorage.setItem('office_scans', JSON.stringify(scanRecords));
+
+            // إخفاء النموذج وإظهار رسالة النجاح
+            document.getElementById('scanForm').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
